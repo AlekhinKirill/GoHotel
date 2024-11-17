@@ -1,32 +1,29 @@
+// Пакет hotel реализует микросервис, который позволяет автоматизировать процессы выселения и заселения гостей из отеля, а также
+// осуществляет автоматический учет их взаимодействия с приотельным рестораном
 package hotel
 
 import (
+	"Go_projects/hotel/accommodation"
+	"Go_projects/hotel/restaurant"
 	"context"
 	"fmt"
 	"time"
 )
 
-type Restaurant interface {
-	Bill(ctx context.Context, roomNumber int) (int, error)
-	PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error)
-	PlaceBreakfast(ctx context.Context, roomNumber int, count int) (id int, err error)
-}
-
-type Accommodation interface {
-	Bill(ctx context.Context, roomNumber int) (int, error)
-	Place(ctx context.Context, number int, tenants []string, stayTime int) (id int, err error)
-}
-
+// Hotel хранит и обрабатывает все данные отеля: о ресторане, номерах, постояльцах, а также о выручке отеля
 type Hotel struct {
-	rest    Restaurant
-	accom   Accommodation
+	rest    restaurant.Restaurant
+	accom   accommodation.Accommodation
 	revenue int
 }
 
-func NewHotel(rest Restaurant, accom Accommodation) *Hotel {
+// NewHotel является кострутором объекта класса Hotel
+func NewHotel(rest restaurant.Restaurant, accom accommodation.Accommodation) *Hotel {
 	return &Hotel{rest: rest, accom: accom, revenue: 0}
 }
 
+// CheckIn осуществляет регистрацию гостей в базе данных отеля, а также передает информацию о том, будут ли гости
+// завтракать в отеле, в ресторан
 func (h *Hotel) CheckIn(ctx context.Context, number int, tenants []string, stayTime int, breakfast bool) (id int, err error) {
 	defer time.Sleep(time.Second)
 	_, err = h.accom.Place(ctx, number, tenants, stayTime)
@@ -42,6 +39,7 @@ func (h *Hotel) CheckIn(ctx context.Context, number int, tenants []string, stayT
 	return number, nil
 }
 
+// CheckIn реализует выселение гостей из отеля, возвращая их счет и увеличивая выручку отеля на соответствующую величину
 func (h *Hotel) CheckOut(ctx context.Context, number int) (int, error) {
 	accomValueChan, accomErrChan := make(chan int), make(chan error)
 	go func() {
@@ -67,10 +65,12 @@ func (h *Hotel) CheckOut(ctx context.Context, number int) (int, error) {
 	return accomValue + restValue, nil
 }
 
+// PlaceOrder позволяет офрмить заказ в приотельном ресторане
 func (h *Hotel) PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error) {
 	return h.rest.PlaceOrder(ctx, roomNumber, dishes)
 }
 
+// Money возвращает информацию о текущей выручке отеля
 func (h *Hotel) Money() int {
 	return h.revenue
 }
