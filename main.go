@@ -3,9 +3,11 @@ package main
 import (
 	"Go_projects/hotel"
 	"Go_projects/hotel/accommodation"
-	"Go_projects/hotel/accommodation/rooms"
+	"Go_projects/hotel/accommodation/accommap"
+	"Go_projects/hotel/accommodation/rooms/roomsmap"
 	"Go_projects/hotel/restaurant"
-	"Go_projects/hotel/restaurant/menu"
+	"Go_projects/hotel/restaurant/menu/menumap"
+	"Go_projects/hotel/restaurant/restmap"
 	"context"
 	"fmt"
 	"log"
@@ -14,37 +16,37 @@ import (
 )
 
 func createMyEmptyHotel() *hotel.Hotel {
-	myRoomTypes := map[int]rooms.Pair{
-		101: {Capacity: 2, Class: "usual"},
-		102: {Capacity: 4, Class: "usual"},
-		103: {Capacity: 4, Class: "lux"},
-		104: {Capacity: 3, Class: "comfort"},
-		105: {Capacity: 2, Class: "lux"},
-		201: {Capacity: 2, Class: "lux"},
-		202: {Capacity: 2, Class: "lux"},
-		203: {Capacity: 2, Class: "usual"},
-		204: {Capacity: 4, Class: "comfort"},
-		205: {Capacity: 3, Class: "comfort"},
-		301: {Capacity: 1, Class: "comfort"},
-		302: {Capacity: 1, Class: "usual"},
-		303: {Capacity: 3, Class: "lux"},
-		304: {Capacity: 4, Class: "lux"},
-		305: {Capacity: 1, Class: "usual"},
+	myRoomTypes := map[int]roomsmap.Pair{
+		101: {Capacity: 2, Class: "эконом"},
+		102: {Capacity: 4, Class: "эконом"},
+		103: {Capacity: 4, Class: "люкс"},
+		104: {Capacity: 3, Class: "комфорт"},
+		105: {Capacity: 2, Class: "люкс"},
+		201: {Capacity: 2, Class: "люкс"},
+		202: {Capacity: 2, Class: "люкс"},
+		203: {Capacity: 2, Class: "эконом"},
+		204: {Capacity: 4, Class: "комфорт"},
+		205: {Capacity: 3, Class: "комфорт"},
+		301: {Capacity: 1, Class: "комфорт"},
+		302: {Capacity: 1, Class: "эконом"},
+		303: {Capacity: 3, Class: "люкс"},
+		304: {Capacity: 4, Class: "люкс"},
+		305: {Capacity: 1, Class: "эконом"},
 	}
 
-	myPrices := map[rooms.Pair]int{
-		{Capacity: 1, Class: "usual"}:   3000,
-		{Capacity: 1, Class: "comfort"}: 4000,
-		{Capacity: 1, Class: "lux"}:     5000,
-		{Capacity: 2, Class: "usual"}:   5000,
-		{Capacity: 2, Class: "comfort"}: 6000,
-		{Capacity: 2, Class: "lux"}:     7500,
-		{Capacity: 3, Class: "usual"}:   7000,
-		{Capacity: 3, Class: "comfort"}: 8000,
-		{Capacity: 3, Class: "lux"}:     9000,
-		{Capacity: 4, Class: "usual"}:   9000,
-		{Capacity: 4, Class: "comfort"}: 10000,
-		{Capacity: 4, Class: "lux"}:     12000,
+	myPrices := map[roomsmap.Pair]int{
+		{Capacity: 1, Class: "эконом"}:  3000,
+		{Capacity: 1, Class: "комфорт"}: 4000,
+		{Capacity: 1, Class: "люкс"}:    5000,
+		{Capacity: 2, Class: "эконом"}:  5000,
+		{Capacity: 2, Class: "комфорт"}: 6000,
+		{Capacity: 2, Class: "люкс"}:    7500,
+		{Capacity: 3, Class: "эконом"}:  7000,
+		{Capacity: 3, Class: "комфорт"}: 8000,
+		{Capacity: 3, Class: "люкс"}:    9000,
+		{Capacity: 4, Class: "эконом"}:  9000,
+		{Capacity: 4, Class: "комфорт"}: 10000,
+		{Capacity: 4, Class: "люкс"}:    12000,
 	}
 
 	myMenu := map[string]int{
@@ -64,8 +66,8 @@ func createMyEmptyHotel() *hotel.Hotel {
 		"мороженое":       200,
 		"штрудель":        200,
 	}
-	accom := accommodation.NewLocalStorage(make(map[int]accommodation.Room), rooms.NewLocalStorage(myRoomTypes, myPrices))
-	rest := restaurant.NewLocalStorage(menu.NewStorage(myMenu, menu.Breakfast{Provided: true, Price: 700}), make(map[int][]restaurant.Dinner))
+	accom := accommap.NewLocalStorage(make(map[int]accommodation.Room), roomsmap.NewLocalStorage(myRoomTypes, myPrices))
+	rest := restmap.NewLocalStorage(menumap.NewStorage(myMenu, menumap.Breakfast{Provided: true, Price: 700}), make(map[int][]restaurant.Dinner))
 	return hotel.NewHotel(rest, accom)
 }
 
