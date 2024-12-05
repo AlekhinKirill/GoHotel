@@ -1,3 +1,4 @@
+// Пакет sqlitaccom реализует учет занимаемых номеров в отеле посредством работы с базой данных
 package sqlitaccom
 
 import (
@@ -11,11 +12,13 @@ import (
 	//"Go_projects/databases"
 )
 
+// Storage реализует интерфейс accommodation.Accommodation на основе база данных
 type Storage struct {
 	database *sql.DB
 	rooms    accommodation.RoomsDescription
 }
 
+// NewStorage является конструктором для Storage
 func NewStorage(path string, rooms accommodation.RoomsDescription) *Storage {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -28,6 +31,7 @@ func NewStorage(path string, rooms accommodation.RoomsDescription) *Storage {
 	}
 }
 
+// Request является классом для хранения информации из сторок базы данных
 type Request struct {
 	Id       int
 	Room     int
@@ -35,6 +39,7 @@ type Request struct {
 	StayTime int
 }
 
+// Show выводит информацию о всех заселенных номерах отеля и их постояльцах
 func (s Storage) Show(ctx context.Context) error {
 	rows, err := s.database.QueryContext(ctx, "select * from Accommodation")
 	if err != nil {
@@ -51,6 +56,7 @@ func (s Storage) Show(ctx context.Context) error {
 	return nil
 }
 
+// Place размещает новых постояльцев в структуре отеля
 func (s Storage) Place(ctx context.Context, number int, tenants []string, stayTime int) (int, error) {
 	var (
 		t string
@@ -84,6 +90,7 @@ func (s Storage) Place(ctx context.Context, number int, tenants []string, stayTi
 	return int(id), nil
 }
 
+// Bill выставляет счет за проживание в номере при выселении гостей из отеля
 func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
 	row, err := s.database.QueryContext(ctx, "select Duration from Menu where Room = ?", roomNumber)
 	if err != nil {
