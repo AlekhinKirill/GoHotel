@@ -1,3 +1,4 @@
+// Пакет sqliterest реализует учет заказов, сделанных в ресторане посредством работы с базой данных
 package sqliterest
 
 import (
@@ -10,11 +11,13 @@ import (
 	//"Go_projects/databases"
 )
 
+// Storage реализует интерфейс restaurant.Restaurant посредством работы с базой данных
 type Storage struct {
 	database *sql.DB
 	menu     restaurant.Menu
 }
 
+// NewStorage является конструктором для Storage
 func NewStorage(path string, menu restaurant.Menu) *Storage {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -27,6 +30,7 @@ func NewStorage(path string, menu restaurant.Menu) *Storage {
 	}
 }
 
+// Request хранит информацию о заказах, полученную из строк базы данных
 type Request struct {
 	Id    int
 	Room  int
@@ -34,6 +38,7 @@ type Request struct {
 	Price int
 }
 
+// Show выводит информацию о сделанных заказах на экран
 func (s Storage) Show(ctx context.Context) error {
 	rows, err := s.database.QueryContext(ctx, "select * from Restaurant")
 	if err != nil {
@@ -50,6 +55,7 @@ func (s Storage) Show(ctx context.Context) error {
 	return nil
 }
 
+// PlaceOrder размещает заказ в базе данных ресторана
 func (s Storage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (int, error) {
 	var (
 		order string
@@ -75,6 +81,7 @@ func (s Storage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string
 	return int(id), nil
 }
 
+// PlaceBreakfast размещает информацию о завтраках в базе данных отеля
 func (s Storage) PlaceBreakfast(ctx context.Context, roomNumber int, count int) (int, error) {
 	price, err := s.menu.Breakfast(ctx)
 	if err != nil {
@@ -93,6 +100,7 @@ func (s Storage) PlaceBreakfast(ctx context.Context, roomNumber int, count int) 
 	return int(id), nil
 }
 
+// Bill выставляет счет от ресторана при выселении постояльцем из отеля с учетом всех сделанных ими заказов и посещенных завтраков
 func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
 	rows, err := s.database.QueryContext(ctx, "select Price from Menu where Room = ?", roomNumber)
 	if err != nil {

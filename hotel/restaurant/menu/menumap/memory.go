@@ -45,11 +45,12 @@ func (s *Storage) Breakfast(ctx context.Context) (int, error) {
 }
 
 // Show выводит меню на экран
-func (s *Storage) Show(ctx context.Context) {
+func (s *Storage) Show(ctx context.Context) error {
 	for dish, price := range s.table {
 		fmt.Printf("%s : %d рублей\n", dish, price)
 	}
 	if s.breakfast.Provided {
 		fmt.Printf("Завтрак : %d рублей", s.breakfast.Price)
 	}
+	return nil
 }

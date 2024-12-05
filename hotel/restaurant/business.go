@@ -23,7 +23,7 @@ type Dinner struct {
 // Menu описывет меню ресторана: позволяет выгрузить список доступных блюд с ценами, автоматически получить цену на интересующее блюдо,
 // а также получить информацию о цене и наличии завтрака в формате шведский стол
 type Menu interface {
-	Show(ctx context.Context)
+	Show(ctx context.Context) error
 	Price(ctx context.Context, dish string) (int, error)
 	Breakfast(ctx context.Context) (int, error)
 }

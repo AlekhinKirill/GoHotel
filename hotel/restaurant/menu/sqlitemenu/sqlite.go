@@ -1,3 +1,4 @@
+// Пакет sqlitemenu реализует меню посредством работы с базой данных
 package sqlitemenu
 
 import (
@@ -10,16 +11,19 @@ import (
 	//"Go_projects/databases"
 )
 
+// Dish хранит информацию о блюде, полученную из строки базы данных
 type Dish struct {
 	Id    int
 	Name  string
 	Price int
 }
 
+// Storage реализует интерфейс restaurnat.Menu посредством работы с базой данных
 type Storage struct {
 	database *sql.DB
 }
 
+// NewStorage является конструктором Storage
 func NewStorage(path string) *Storage {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -31,6 +35,7 @@ func NewStorage(path string) *Storage {
 	}
 }
 
+// Load выгружает всю информацию о блюдах из меню в более удобной для дальнейшей работы форме
 func (s Storage) Load(ctx context.Context) ([]Dish, error) {
 	rows, err := s.database.QueryContext(ctx, "select * from Menu")
 	if err != nil {
@@ -48,6 +53,7 @@ func (s Storage) Load(ctx context.Context) ([]Dish, error) {
 	return dishes, nil
 }
 
+// Show выводит меню на экран
 func (s Storage) Show(ctx context.Context) error {
 	dishes, err := s.Load(ctx)
 	if err != nil {
@@ -59,6 +65,7 @@ func (s Storage) Show(ctx context.Context) error {
 	return nil
 }
 
+// Price возвращает стоимость конкретного блюда в меню
 func (s Storage) Price(ctx context.Context, dish string) (int, error) {
 	dishes, err := s.Load(ctx)
 	if err != nil {
@@ -73,6 +80,7 @@ func (s Storage) Price(ctx context.Context, dish string) (int, error) {
 	return 0, oops.ErrOutOfMenu{Dish: dish}
 }
 
+// Breakfast возвращает стоимость завтрака на одного человека
 func (s Storage) Breakfast(ctx context.Context) (int, error) {
 	price, err := s.Price(ctx, "Завтрак")
 	if err != nil {
@@ -83,20 +91,3 @@ func (s Storage) Breakfast(ctx context.Context) (int, error) {
 	}
 	return price, nil
 }
-
-/*
-func Open(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-	result, err := db.Exec("insert into products (model, company, price) values ('iPhone X', $1, $2)",
-		"Apple", 72000)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(result.LastInsertId())
-	fmt.Println(result.RowsAffected())
-}
-*/
