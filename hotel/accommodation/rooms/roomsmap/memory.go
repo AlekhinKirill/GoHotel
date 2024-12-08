@@ -70,3 +70,7 @@ func (s *LocalStorage) Show(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (s *LocalStorage) Close() error {
+	return nil
+}

@@ -71,3 +71,15 @@ func (s *LocalStorage) PlaceBreakfast(ctx context.Context, roomNumber int, count
 	s.mu.Unlock()
 	return roomNumber, nil
 }
+
+func (s *LocalStorage) ShowMenu(ctx context.Context) error {
+	return s.menu.Show(ctx)
+}
+
+func (s *LocalStorage) Close() error {
+	err := s.menu.Close()
+	if err != nil {
+		return fmt.Errorf("restmap.LocalStorage.Close error: %w", err)
+	}
+	return s.menu.Close()
+}

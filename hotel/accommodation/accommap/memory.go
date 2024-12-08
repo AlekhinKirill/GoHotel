@@ -73,3 +73,7 @@ func (s *LocalStorage) Replace(ctx context.Context, number int) error {
 	s.Mu.Unlock()
 	return nil
 }
+
+func (s *LocalStorage) Close() error {
+	return s.Description.Close()
+}

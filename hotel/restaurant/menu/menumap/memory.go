@@ -54,3 +54,9 @@ func (s *Storage) Show(ctx context.Context) error {
 	}
 	return nil
 }
+
+// Close нужен для реализации интерфейса restaurnat.Menu
+// в случае сохранения в map этот метод фиктивный
+func (s *Storage) Close() error {
+	return nil
+}

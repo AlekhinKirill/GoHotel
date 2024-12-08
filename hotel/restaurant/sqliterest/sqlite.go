@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	//"Go_projects/databases"
 )
 
 // Storage реализует интерфейс restaurant.Restaurant посредством работы с базой данных
@@ -21,9 +20,8 @@ type Storage struct {
 func NewStorage(path string, menu restaurant.Menu) *Storage {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
-		log.Fatal(fmt.Errorf("NewStorage error: %w", err))
+		log.Fatal(fmt.Errorf("sqliterest.NewStorage error: %w", err))
 	}
-	db.Close()
 	return &Storage{
 		database: db,
 		menu:     menu,
@@ -32,10 +30,10 @@ func NewStorage(path string, menu restaurant.Menu) *Storage {
 
 // Request хранит информацию о заказах, полученную из строк базы данных
 type Request struct {
-	Id    int
-	Room  int
-	Order string
-	Price int
+	Id     int
+	Room   int
+	Dinner string
+	Price  int
 }
 
 // Show выводит информацию о сделанных заказах на экран
@@ -46,11 +44,11 @@ func (s Storage) Show(ctx context.Context) error {
 	}
 	for rows.Next() {
 		var req Request
-		err = rows.Scan(&req.Id, &req.Room, &req.Order, &req.Price)
+		err = rows.Scan(&req.Id, &req.Room, &req.Dinner, &req.Price)
 		if err != nil {
-			return err
+			return fmt.Errorf("sqliterest.Storage.Show error: %w", err)
 		}
-		fmt.Printf("Заказ №%d, комната №%d: %s. Стоимость: %d рублей", req.Id, req.Room, req.Order, req.Price)
+		fmt.Printf("Заказ №%d, комната №%d: %s. Стоимость: %d рублей", req.Id, req.Room, req.Dinner, req.Price)
 	}
 	return nil
 }
@@ -65,18 +63,18 @@ func (s Storage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string
 		order += dish + ", "
 		price, err := s.menu.Price(ctx, dish)
 		if err != nil {
-			return -1, err
+			return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
 		}
 		sum += price
 	}
 	order = strings.TrimRight(order, ", ")
-	result, err := s.database.Exec("insert into Restaurant (Room, Order, Price) values (?, ?, ?)", roomNumber, order, sum)
+	result, err := s.database.Exec("INSERT INTO Restaurant (Room, Dinner, Price) VALUES ($1, $2, $3);", roomNumber, order, sum)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error in db.Exec: %w", err)
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
 	}
 	return int(id), nil
 }
@@ -85,35 +83,55 @@ func (s Storage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string
 func (s Storage) PlaceBreakfast(ctx context.Context, roomNumber int, count int) (int, error) {
 	price, err := s.menu.Breakfast(ctx)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
 	}
 	order := strings.Repeat("Завтрак, ", count)
 	order = strings.TrimRight(order, ", ")
-	result, err := s.database.Exec("insert into dinners (room, order, price) values (?, ?, ?)", roomNumber, order, price*count)
+	result, err := s.database.Exec("INSERT INTO Restaurant (Room, Dinner, Price) VALUES ($1, $2, $3);", roomNumber, order, price*count)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error in db.Exec: %w", err)
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
 	}
 	return int(id), nil
 }
 
 // Bill выставляет счет от ресторана при выселении постояльцем из отеля с учетом всех сделанных ими заказов и посещенных завтраков
 func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
-	rows, err := s.database.QueryContext(ctx, "select Price from Menu where Room = ?", roomNumber)
+	rows, err := s.database.QueryContext(ctx, "Select Price FROM Restaurant WHERE Room = $1", roomNumber)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sqliterest.Storage.Bill error: %w", err)
 	}
 	var sum int
 	for rows.Next() {
 		var price int
 		err = rows.Scan(&price)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("sqliterest.Storage.Bill error: %w", err)
 		}
 		sum += price
 	}
+	_, err = s.database.Exec("DELETE FROM Restaurant WHERE Room = $1", roomNumber)
+	if err != nil {
+		return 0, fmt.Errorf("sqliterest.Storage.Bill error: %w", err)
+	}
 	return sum, nil
+}
+
+func (s Storage) ShowMenu(ctx context.Context) error {
+	return s.menu.Show(ctx)
+}
+
+func (s Storage) Close() error {
+	err := s.database.Close()
+	if err != nil {
+		return fmt.Errorf("sqliterest.Storage.Close error: %w", err)
+	}
+	err = s.menu.Close()
+	if err != nil {
+		return fmt.Errorf("sqliterest.Storage.Close error: %w", err)
+	}
+	return nil
 }

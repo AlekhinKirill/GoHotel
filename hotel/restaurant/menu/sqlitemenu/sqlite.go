@@ -8,7 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	//"Go_projects/databases"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Dish хранит информацию о блюде, полученную из строки базы данных
@@ -27,9 +28,8 @@ type Storage struct {
 func NewStorage(path string) *Storage {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
-		log.Fatal(fmt.Errorf("NewStorage error: %w", err))
+		log.Fatal(fmt.Errorf("sqlitemenu.NewStorage error: %w", err))
 	}
-	db.Close()
 	return &Storage{
 		database: db,
 	}
@@ -60,7 +60,7 @@ func (s Storage) Show(ctx context.Context) error {
 		return err
 	}
 	for _, dish := range dishes {
-		fmt.Printf("%s: %d рублей", dish.Name, dish.Price)
+		fmt.Printf("%s: %d рублей\n", dish.Name, dish.Price)
 	}
 	return nil
 }
@@ -90,4 +90,9 @@ func (s Storage) Breakfast(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	return price, nil
+}
+
+// Close закрывает соединение с базой данных
+func (s Storage) Close() error {
+	return s.database.Close()
 }

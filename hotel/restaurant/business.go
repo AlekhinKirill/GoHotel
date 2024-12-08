@@ -12,6 +12,8 @@ type Restaurant interface {
 	Bill(ctx context.Context, roomNumber int) (int, error)
 	PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error)
 	PlaceBreakfast(ctx context.Context, roomNumber int, count int) (id int, err error)
+	ShowMenu(ctx context.Context) error
+	Close() error
 }
 
 // Dinner хранит в себе информацию о сделанном заказе: названия заказанных блюд и их суммарную стоимость
@@ -26,4 +28,5 @@ type Menu interface {
 	Show(ctx context.Context) error
 	Price(ctx context.Context, dish string) (int, error)
 	Breakfast(ctx context.Context) (int, error)
+	Close() error
 }

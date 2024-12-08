@@ -10,6 +10,7 @@ import (
 type Accommodation interface {
 	Bill(ctx context.Context, roomNumber int) (int, error)
 	Place(ctx context.Context, number int, tenants []string, stayTime int) (id int, err error)
+	Close() error
 }
 
 // Room хранит в себе информацию о данном номере в отеле и его текущих жильцах
@@ -26,4 +27,5 @@ type RoomsDescription interface {
 	Price(ctx context.Context, roomNumber int) (int, error)
 	Capacity(ctx context.Context, roomNumber int) (int, error)
 	Type(ctx context.Context, roomNumber int) (string, error)
+	Close() error
 }

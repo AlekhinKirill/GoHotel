@@ -6,10 +6,10 @@ import (
 	"Go_projects/hotel/oops"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
-	//"Go_projects/databases"
 )
 
 // Storage реализует интерфейс accommodation.Accommodation на основе база данных
@@ -24,7 +24,6 @@ func NewStorage(path string, rooms accommodation.RoomsDescription) *Storage {
 	if err != nil {
 		log.Fatal(fmt.Errorf("NewStorage error: %w", err))
 	}
-	db.Close()
 	return &Storage{
 		database: db,
 		rooms:    rooms,
@@ -33,7 +32,6 @@ func NewStorage(path string, rooms accommodation.RoomsDescription) *Storage {
 
 // Request является классом для хранения информации из сторок базы данных
 type Request struct {
-	Id       int
 	Room     int
 	Tenants  string
 	StayTime int
@@ -47,11 +45,11 @@ func (s Storage) Show(ctx context.Context) error {
 	}
 	for rows.Next() {
 		var req Request
-		err = rows.Scan(&req.Id, &req.Room, &req.Tenants, &req.StayTime)
+		err = rows.Scan(&req.Room, &req.Tenants, &req.StayTime)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%d. Комната №%d: %s. Время проживания: %d ночей", req.Id, req.Room, req.Tenants, req.StayTime)
+		fmt.Printf("Комната №%d: %s. Время проживания: %d ночей", req.Room, req.Tenants, req.StayTime)
 	}
 	return nil
 }
@@ -63,23 +61,22 @@ func (s Storage) Place(ctx context.Context, number int, tenants []string, stayTi
 	)
 	capacity, err := s.rooms.Capacity(ctx, number)
 	if err != nil {
-		return -1, fmt.Errorf("localStorage.Place error: %w", err)
+		return -1, fmt.Errorf("sqlitaccom.Storage.Place error: %w", err)
 	}
 	if capacity != len(tenants) {
-		return -1, fmt.Errorf("localStorage.Place error: %w", oops.ErrRoomInconsistency{Number: number, Capacity: capacity, GuestsNumber: len(tenants)})
+		return -1, fmt.Errorf("sqlitaccom.Storage.Place error: %w", oops.ErrRoomInconsistency{Number: number, Capacity: capacity, GuestsNumber: len(tenants)})
 	}
-	rows, err := s.database.QueryContext(ctx, "select Room from Accommodation where Room = ?", number)
-	if err != nil {
-		return -1, err
-	}
-	if rows != nil {
-		return -1, fmt.Errorf("Storage.Place error: %w", oops.ErrOccupiedAlready{Number: number})
+	row := s.database.QueryRowContext(ctx, "SELECT Room FROM Accommodation WHERE Room = $1", number)
+	var num int
+	err = row.Scan(&num)
+	if !errors.Is(err, sql.ErrNoRows) {
+		return -1, fmt.Errorf("sqlitaccom.Storage.Place error: %w", oops.ErrOccupiedAlready{Number: number})
 	}
 	for _, person := range tenants {
 		t += person + ", "
 	}
 	t = strings.TrimRight(t, ", ")
-	result, err := s.database.Exec("insert into Accommodation (Room, Tenants, Duration) values (?, ?, ?)", number, t, stayTime)
+	result, err := s.database.Exec("insert into Accommodation (Room, Tenants, StayTime) values ($1, $2, $3)", number, t, stayTime)
 	if err != nil {
 		return -1, err
 	}
@@ -92,25 +89,38 @@ func (s Storage) Place(ctx context.Context, number int, tenants []string, stayTi
 
 // Bill выставляет счет за проживание в номере при выселении гостей из отеля
 func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
-	row, err := s.database.QueryContext(ctx, "select Duration from Menu where Room = ?", roomNumber)
-	if err != nil {
-		return 0, err
-	}
-	if row == nil {
-		return 0, fmt.Errorf("Storage.Bill error: %w", oops.ErrEmptyRoom{Number: roomNumber})
-	}
+	row := s.database.QueryRowContext(ctx, "SELECT StayTime FROM Accommodation WHERE Room = $1", roomNumber)
 	var stayTime int
-	err = row.Scan(&stayTime)
+	err := row.Scan(&stayTime)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, fmt.Errorf("sqlitaccom.Storage.Bill error: %w", oops.ErrEmptyRoom{Number: roomNumber})
+	}
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sqlitaccom.Storage.Bill error: %w", err)
 	}
 	price, err := s.rooms.Price(ctx, roomNumber)
 	if err != nil {
-		return 0, fmt.Errorf("Storage.Bill error: %w", err)
+		return 0, fmt.Errorf("sqlitaccom.Storage.Bill error: %w", err)
 	}
-	_, err = s.database.Exec("delete from Accommodation where Room = ?", roomNumber)
+	_, err = s.database.Exec("DELETE FROM Accommodation WHERE Room = $1", roomNumber)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sqlitaccom.Storage.Bill error: %w", err)
 	}
 	return price * stayTime, nil
+}
+
+func (s Storage) Description(ctx context.Context) error {
+	return s.rooms.Show(ctx)
+}
+
+func (s Storage) Close() error {
+	err := s.database.Close()
+	if err != nil {
+		return fmt.Errorf("sqliteaccom.Storage.Close error: %w", err)
+	}
+	err = s.rooms.Close()
+	if err != nil {
+		return fmt.Errorf("sqliteaccom.Storage.Close error: %w", err)
+	}
+	return nil
 }
