@@ -5,9 +5,14 @@ import (
 	"Go_projects/hotel/accommodation"
 	"Go_projects/hotel/accommodation/accommap"
 	"Go_projects/hotel/accommodation/rooms/roomsmap"
+	"Go_projects/hotel/accommodation/rooms/sqliterooms"
+	"Go_projects/hotel/accommodation/sqlitaccom"
+	"Go_projects/hotel/interactive"
 	"Go_projects/hotel/restaurant"
 	"Go_projects/hotel/restaurant/menu/menumap"
+	"Go_projects/hotel/restaurant/menu/sqlitemenu"
 	"Go_projects/hotel/restaurant/restmap"
+	"Go_projects/hotel/restaurant/sqliterest"
 	"context"
 	"fmt"
 	"log"
@@ -50,30 +55,39 @@ func createMyEmptyHotel() *hotel.Hotel {
 	}
 
 	myMenu := map[string]int{
-		"шеф-салат":       300,
-		"хинкали":         300,
-		"цезарь":          200,
-		"стейк":           1000,
-		"пицца-пепперони": 500,
-		"маргарита":       300,
-		"болоньезе":       300,
-		"шницель":         500,
-		"лосось-гриль":    700,
-		"сациви":          400,
-		"хачапури":        300,
-		"вино":            500,
-		"шампанское":      500,
-		"мороженое":       200,
-		"штрудель":        200,
+		"Шеф-салат":       300,
+		"Хинкали":         300,
+		"Цезарь":          200,
+		"Стейк":           1000,
+		"Пицца-пепперони": 500,
+		"Маргарита":       300,
+		"Болоньезе":       300,
+		"Шницель":         500,
+		"Лосось-гриль":    700,
+		"Сациви":          400,
+		"Хачапури":        300,
+		"Вино":            500,
+		"Шампанское":      500,
+		"Мороженое":       200,
+		"Штрудель":        200,
 	}
 	accom := accommap.NewLocalStorage(make(map[int]accommodation.Room), roomsmap.NewLocalStorage(myRoomTypes, myPrices))
 	rest := restmap.NewLocalStorage(menumap.NewStorage(myMenu, menumap.Breakfast{Provided: true, Price: 700}), make(map[int][]restaurant.Dinner))
 	return hotel.NewHotel(rest, accom)
 }
 
-func main() {
+func createMySQLiteHotel() *hotel.Hotel {
+	myMenu := sqlitemenu.NewStorage("D:/Go_projects/databases/menu.db")
+	myRooms := sqliterooms.NewStorage("D:/Go_projects/databases/apartments.db")
+	accom := sqlitaccom.NewStorage("D:/Go_projects/databases/accommodation.db", myRooms)
+	rest := sqliterest.NewStorage("D:/Go_projects/databases/restaurant.db", myMenu)
+	return hotel.NewHotel(rest, accom)
+}
+
+func demonstration() {
 	ctx := context.Background()
-	h := createMyEmptyHotel()
+	h := createMySQLiteHotel()
+	defer h.Close()
 	numbers := []int{104, 105, 302}
 	names := [][]string{{"Иванов", "Петров", "Сидоров"}, {"Пирогов", "Пирогова"}, {"Козлов"}}
 	guestsNumbers := []int{3, 2, 1}
@@ -93,7 +107,7 @@ func main() {
 	wg.Wait()
 	duration := time.Since(start)
 	fmt.Println(duration)
-	dinners := [][]string{{"вино", "хачапури", "стейк", "шницель"}, {"шампанское", "болоньезе", "пицца-пепперони", "штрудель"}, {"лосось-гриль", "сациви"}}
+	dinners := [][]string{{"Вино", "Хачапури", "Стейк", "Шницель"}, {"Шампанское", "Болоньезе", "Пицца-пепперони", "Штрудель"}, {"Лосось-гриль", "Сациви"}}
 	wg.Add(3)
 	for i := 0; i < 3; i++ {
 		go func() {
@@ -121,4 +135,11 @@ func main() {
 	fmt.Printf("%d\n", h.Money())
 	duration = time.Since(start)
 	fmt.Println(duration)
+}
+
+func main() {
+	ctx := context.Background()
+	h := createMySQLiteHotel()
+	in := interactive.Interactive{Hotel: h}
+	in.Request(ctx)
 }
