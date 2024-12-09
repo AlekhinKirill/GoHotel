@@ -13,6 +13,7 @@ type Restaurant interface {
 	PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error)
 	PlaceBreakfast(ctx context.Context, roomNumber int, count int) (id int, err error)
 	ShowMenu(ctx context.Context) error
+	Show(ctx context.Context) error
 	Close() error
 }
 

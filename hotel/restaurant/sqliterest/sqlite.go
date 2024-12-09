@@ -30,7 +30,6 @@ func NewStorage(path string, menu restaurant.Menu) *Storage {
 
 // Request хранит информацию о заказах, полученную из строк базы данных
 type Request struct {
-	Id     int
 	Room   int
 	Dinner string
 	Price  int
@@ -44,11 +43,11 @@ func (s Storage) Show(ctx context.Context) error {
 	}
 	for rows.Next() {
 		var req Request
-		err = rows.Scan(&req.Id, &req.Room, &req.Dinner, &req.Price)
+		err = rows.Scan(&req.Room, &req.Dinner, &req.Price)
 		if err != nil {
 			return fmt.Errorf("sqliterest.Storage.Show error: %w", err)
 		}
-		fmt.Printf("Заказ №%d, комната №%d: %s. Стоимость: %d рублей", req.Id, req.Room, req.Dinner, req.Price)
+		fmt.Printf("Комната №%d: %s. Стоимость: %d рублей\n", req.Room, req.Dinner, req.Price)
 	}
 	return nil
 }
@@ -63,18 +62,18 @@ func (s Storage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string
 		order += dish + ", "
 		price, err := s.menu.Price(ctx, dish)
 		if err != nil {
-			return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
+			return -1, fmt.Errorf("sqliterest.Storage.PlaceOrder error: %w", err)
 		}
 		sum += price
 	}
 	order = strings.TrimRight(order, ", ")
 	result, err := s.database.Exec("INSERT INTO Restaurant (Room, Dinner, Price) VALUES ($1, $2, $3);", roomNumber, order, sum)
 	if err != nil {
-		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error in db.Exec: %w", err)
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceOrder error in db.Exec: %w", err)
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		return -1, fmt.Errorf("sqliterest.Storage.PlaceBreakfast error: %w", err)
+		return -1, fmt.Errorf("sqliterest.Storage.PlaceOrder error: %w", err)
 	}
 	return int(id), nil
 }

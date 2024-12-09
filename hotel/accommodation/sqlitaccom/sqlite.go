@@ -49,7 +49,7 @@ func (s Storage) Show(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Комната №%d: %s. Время проживания: %d ночей", req.Room, req.Tenants, req.StayTime)
+		fmt.Printf("Комната №%d: %s. Время проживания: %d ночи\n", req.Room, req.Tenants, req.StayTime)
 	}
 	return nil
 }

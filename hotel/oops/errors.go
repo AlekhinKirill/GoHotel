@@ -61,3 +61,11 @@ type ErrOutOfMenu struct {
 func (err ErrOutOfMenu) Error() string {
 	return fmt.Sprintf("блюда %s пока нет в нашем меню", err.Dish)
 }
+
+type ErrOperationNameMistake struct {
+	Input string
+}
+
+func (err ErrOperationNameMistake) Error() string {
+	return fmt.Sprintf("операция %s не поддерживается", err.Input)
+}

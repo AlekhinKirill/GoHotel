@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 )
 
 // LocalStorage реализует интерфейс restaurant.Restaurant на основе сохранения информации о заказах в локальной памяти компьютера (в map)
@@ -28,7 +27,7 @@ func NewLocalStorage(menu restaurant.Menu, database map[int][]restaurant.Dinner)
 
 // Bill выставляет счет от ресторана при выселении постояльцем из отеля с учетом всех сделанных ими заказов и посещенных завтраков
 func (s *LocalStorage) Bill(ctx context.Context, roomNumber int) (int, error) {
-	defer time.Sleep(time.Second)
+	//defer time.Sleep(time.Second)
 	var sum int
 	for _, dinner := range s.database[roomNumber] {
 		sum += dinner.Price
@@ -41,7 +40,7 @@ func (s *LocalStorage) Bill(ctx context.Context, roomNumber int) (int, error) {
 
 // PlaceOrder размещает заказ в базе данных ресторана
 func (s *LocalStorage) PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error) {
-	defer time.Sleep(time.Second)
+	//defer time.Sleep(time.Second)
 	var sum int
 	for _, dish := range dishes {
 		price, err := s.menu.Price(ctx, dish)
@@ -74,6 +73,20 @@ func (s *LocalStorage) PlaceBreakfast(ctx context.Context, roomNumber int, count
 
 func (s *LocalStorage) ShowMenu(ctx context.Context) error {
 	return s.menu.Show(ctx)
+}
+
+func (s *LocalStorage) Show(ctx context.Context) error {
+	for room, dinners := range s.database {
+		fmt.Printf("Комната %d:\n", room)
+		for i, dinner := range dinners {
+			fmt.Printf("Заказ №%d:", i)
+			for _, dish := range dinner.Dishes {
+				fmt.Printf(" %s;", dish)
+			}
+			fmt.Printf(" стоимость: %d рублей\n", dinner.Price)
+		}
+	}
+	return nil
 }
 
 func (s *LocalStorage) Close() error {

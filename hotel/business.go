@@ -7,7 +7,6 @@ import (
 	"Go_projects/hotel/restaurant"
 	"context"
 	"fmt"
-	"time"
 )
 
 // Hotel хранит и обрабатывает все данные отеля: о ресторане, номерах, постояльцах, а также о выручке отеля
@@ -25,7 +24,7 @@ func NewHotel(rest restaurant.Restaurant, accom accommodation.Accommodation) *Ho
 // CheckIn осуществляет регистрацию гостей в базе данных отеля, а также передает информацию о том, будут ли гости
 // завтракать в отеле, в ресторан
 func (h *Hotel) CheckIn(ctx context.Context, number int, tenants []string, stayTime int, breakfast bool) (id int, err error) {
-	defer time.Sleep(time.Second)
+	//defer time.Sleep(time.Second)
 	_, err = h.Accom.Place(ctx, number, tenants, stayTime)
 	if err != nil {
 		return 0, fmt.Errorf("hotel.checkIn error: %w", err)

@@ -46,7 +46,7 @@ func (s Storage) Show(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Комната №%d: %d-хместный номер класса %s. Стоимость: %d рублей за ночь",
+		fmt.Printf("Комната №%d: %d-хместный номер класса %s. Стоимость: %d рублей за ночь\n",
 			req.Number, req.Capacity, req.Class, req.Price)
 	}
 	return nil
