@@ -1,4 +1,4 @@
-// Пакет sqlitemenu реализует меню посредством работы с базой данных
+// Пакет sqlitemenu реализует меню посредством работы с базой данных sqlite
 package sqlitemenu
 
 import (

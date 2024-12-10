@@ -94,6 +94,7 @@ func (s Storage) Price(ctx context.Context, roomNumber int) (int, error) {
 	return price, nil
 }
 
+// Close закрывет базу данных
 func (s Storage) Close() error {
 	err := s.database.Close()
 	if err != nil {

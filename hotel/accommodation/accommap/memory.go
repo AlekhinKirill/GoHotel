@@ -73,6 +73,7 @@ func (s *LocalStorage) Replace(ctx context.Context, number int) error {
 	return nil
 }
 
+// Show выводит информацию о всех заселенных номерах отеля и их постояльцах
 func (s *LocalStorage) Show(ctx context.Context) error {
 	for number, room := range s.Database {
 		fmt.Printf("Комната №%d: ", number)
@@ -84,10 +85,20 @@ func (s *LocalStorage) Show(ctx context.Context) error {
 	return nil
 }
 
+// Exists проверяет, завселен ли данный номер
+func (s *LocalStorage) Exists(ctx context.Context, number int) (bool, error) {
+	_, exists := s.Database[number]
+	return exists, nil
+}
+
+// Description выводит описание номеров отеля на экран
 func (s *LocalStorage) Description(ctx context.Context) error {
 	return s.Descr.Show(ctx)
 }
 
+// Close нужен для реализации интерфейса accommodation.Accommodation
+// в случае сохранения информации о заказах в map требуется лишь аккуратно закрыть accommodation.Accommodation.Descr,
+// посколько оно может быть реализовано не на основе map
 func (s *LocalStorage) Close() error {
 	return s.Descr.Close()
 }

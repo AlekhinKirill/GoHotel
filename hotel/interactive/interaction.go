@@ -1,3 +1,4 @@
+// Пакет interactive реализует взаимодействие с отелем посредством ручного ввода с терминала
 package interactive
 
 import (
@@ -7,6 +8,7 @@ import (
 	"fmt"
 )
 
+// Interactive явялется оберткой над hotel.Hotel, для которой реализованы методы управления с терминала
 type Interactive struct {
 	Hotel *hotel.Hotel
 }
@@ -94,7 +96,7 @@ func (in *Interactive) information(ctx context.Context) error {
 		err = in.Hotel.Accom.Show(ctx)
 	case "меню":
 		err = in.Hotel.Rest.ShowMenu(ctx)
-		fmt.Println("приятного аппетита!")
+		fmt.Println("Приятного аппетита!")
 	case "выручка":
 		fmt.Printf("выручка составляет %d рублей\n", in.Hotel.Money())
 	case "заказы":
@@ -122,9 +124,11 @@ func (in *Interactive) Request(ctx context.Context) error {
 		case "выселение":
 			var sum int
 			sum, err = in.Hotel.CheckOut(ctx, receiveRoomNumber())
-			printBill(sum)
+			if err == nil {
+				printBill(sum)
+			}
 		case "заказ":
-			_, err = in.Hotel.Rest.PlaceOrder(ctx, receiveRoomNumber(), receiveAnOrder())
+			_, err = in.Hotel.PlaceOrder(ctx, receiveRoomNumber(), receiveAnOrder())
 		case "информация":
 			err = in.information(ctx)
 		case "завершение":

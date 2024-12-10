@@ -71,6 +71,8 @@ func (s *LocalStorage) Show(ctx context.Context) error {
 	return nil
 }
 
+// Close необходим для реализации интерфейса accommodation.RoomsDescription
+// в случае использования map этот метод фиктивный
 func (s *LocalStorage) Close() error {
 	return nil
 }

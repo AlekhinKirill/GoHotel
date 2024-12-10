@@ -10,6 +10,7 @@ import (
 type Accommodation interface {
 	Bill(ctx context.Context, roomNumber int) (int, error)
 	Place(ctx context.Context, number int, tenants []string, stayTime int) (id int, err error)
+	Exists(ctx context.Context, number int) (bool, error)
 	Description(ctx context.Context) error
 	Show(ctx context.Context) error
 	Close() error

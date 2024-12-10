@@ -62,6 +62,7 @@ func (err ErrOutOfMenu) Error() string {
 	return fmt.Sprintf("блюда %s пока нет в нашем меню", err.Dish)
 }
 
+// ErrOperationNameMistake возникает при ошибке/опечатке в написании запроса при ручном вводе
 type ErrOperationNameMistake struct {
 	Input string
 }

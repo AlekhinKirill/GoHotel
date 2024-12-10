@@ -50,7 +50,7 @@ func (s *Storage) Show(ctx context.Context) error {
 		fmt.Printf("%s : %d рублей\n", dish, price)
 	}
 	if s.breakfast.Provided {
-		fmt.Printf("Завтрак : %d рублей", s.breakfast.Price)
+		fmt.Printf("Завтрак : %d рублей\n", s.breakfast.Price)
 	}
 	return nil
 }

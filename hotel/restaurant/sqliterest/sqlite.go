@@ -119,10 +119,13 @@ func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
 	return sum, nil
 }
 
+// ShowMenu выводит меню ресторана на экран
 func (s Storage) ShowMenu(ctx context.Context) error {
 	return s.menu.Show(ctx)
 }
 
+// Close закрывает соединение с базой данных, а также закрывает Restaurant.menu, поскольку оно также может быть реализовано
+// на основе отдельной базы данных
 func (s Storage) Close() error {
 	err := s.database.Close()
 	if err != nil {

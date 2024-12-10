@@ -109,10 +109,26 @@ func (s Storage) Bill(ctx context.Context, roomNumber int) (int, error) {
 	return price * stayTime, nil
 }
 
+// Exists проверяет, завселен ли данный номер
+func (s Storage) Exists(ctx context.Context, number int) (bool, error) {
+	row := s.database.QueryRowContext(ctx, "SELECT Room FROM Accommodation WHERE Room = $1", number)
+	var room int
+	err := row.Scan(&room)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("sqlitaccom.Storage.Exists error: %w", err)
+	}
+	return true, nil
+}
+
+// Description выводит описание номеров отеля на экран
 func (s Storage) Description(ctx context.Context) error {
 	return s.rooms.Show(ctx)
 }
 
+// Close закрывает базу с данными о постояльцах, а также базу с данными о самих номерах
 func (s Storage) Close() error {
 	err := s.database.Close()
 	if err != nil {

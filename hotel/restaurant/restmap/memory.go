@@ -71,15 +71,17 @@ func (s *LocalStorage) PlaceBreakfast(ctx context.Context, roomNumber int, count
 	return roomNumber, nil
 }
 
+// ShowMenu выводит меню ресторана на экран
 func (s *LocalStorage) ShowMenu(ctx context.Context) error {
 	return s.menu.Show(ctx)
 }
 
+// Show выводит на экран информацию о заказах, сделанных постояльцами
 func (s *LocalStorage) Show(ctx context.Context) error {
 	for room, dinners := range s.database {
 		fmt.Printf("Комната %d:\n", room)
 		for i, dinner := range dinners {
-			fmt.Printf("Заказ №%d:", i)
+			fmt.Printf("Заказ №%d:", i+1)
 			for _, dish := range dinner.Dishes {
 				fmt.Printf(" %s;", dish)
 			}
@@ -89,10 +91,13 @@ func (s *LocalStorage) Show(ctx context.Context) error {
 	return nil
 }
 
+// Close нужен для реализации интерфейса restaurant.Restaurant
+// в случае сохранения информации о заказах в map требуется лишь аккуратно закрыть Restaurant.menu,
+// посколько оно может быть реализовано не на основе map
 func (s *LocalStorage) Close() error {
 	err := s.menu.Close()
 	if err != nil {
 		return fmt.Errorf("restmap.LocalStorage.Close error: %w", err)
 	}
-	return s.menu.Close()
+	return nil
 }

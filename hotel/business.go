@@ -4,6 +4,7 @@ package hotel
 
 import (
 	"Go_projects/hotel/accommodation"
+	"Go_projects/hotel/oops"
 	"Go_projects/hotel/restaurant"
 	"context"
 	"fmt"
@@ -66,6 +67,13 @@ func (h *Hotel) CheckOut(ctx context.Context, number int) (int, error) {
 
 // PlaceOrder позволяет офрмить заказ в приотельном ресторане
 func (h *Hotel) PlaceOrder(ctx context.Context, roomNumber int, dishes []string) (id int, err error) {
+	exists, err := h.Accom.Exists(ctx, roomNumber)
+	if err != nil {
+		return -1, fmt.Errorf("hotel.Hotel.PlaceOrder error: %w", err)
+	}
+	if !exists {
+		return -1, fmt.Errorf("hotel.Hotel.PlaceOrder error: %w", oops.ErrEmptyRoom{Number: roomNumber})
+	}
 	return h.Rest.PlaceOrder(ctx, roomNumber, dishes)
 }
 
@@ -74,6 +82,7 @@ func (h *Hotel) Money() int {
 	return h.revenue
 }
 
+// Close закрывает все базы данных, связанные с отелем
 func (h *Hotel) Close() error {
 	err := h.Rest.Close()
 	if err != nil {
