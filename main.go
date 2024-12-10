@@ -139,7 +139,8 @@ func demonstration() {
 
 func main() {
 	ctx := context.Background()
-	h := createMySQLiteHotel()
+	//h := createMySQLiteHotel()
+	h := createMyEmptyHotel()
 	in := interactive.Interactive{Hotel: h}
 	in.Request(ctx)
 }
